@@ -1,0 +1,10 @@
+# CMake build files
+build/*
+CMakeCache.txt
+CMakeFiles
+
+# Temp file
+*.swp
+
+# Whitelist to keep the 'build' directory there.
+!/build/.gitkeep
