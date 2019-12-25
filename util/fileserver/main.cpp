@@ -49,26 +49,52 @@ class FileRequestHandler : public HTTPRequestHandler {
         app.logger().information("Request from " +
                                  request.clientAddress().toString());
 
-        string path = request.getURI().substr(1);
-        URI uri(request.getURI());
-        Path requestPath("./", uri.getPath());
+        URI uri("." + request.getURI());
+        Path uriPath(uri.getPath());
+        map<string, string> params = parseParam(uri.getQueryParameters());
+        if (params.count("dl") && params.at("dl") == "1") {
+            reactFile(uriPath, response);
+        } else {
+            reactInformation(uriPath, response);
+        }
+    }
+
+    static map<string, string> parseParam(const URI::QueryParameters& param) {
+        map<string, string> ret;
+        for (auto& p : param) {
+            ret.insert(p);
+        }
+        return ret;
+    }
+
+    void reactFile(const Path& path, HTTPServerResponse& response) {
+        File file(path);
+        if (file.exists() && file.isFile() && file.canRead()) {
+            response.sendFile(file.path(), "application/octet-stream");
+        } else {
+            response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);
+            response.send();
+        }
+    }
+
+    void reactInformation(const Path& path, HTTPServerResponse& response) {
+        Application& app = Application::instance();
 
         response.setContentType("text/html");
-
         ostream& ostr = response.send();
         ostr << "<html>\n";
         ostr << "<head><title>"
              << "File request"
              << "</title></head>\n";
         ostr << "<body>";
-        ostr << "You Requested<br>";
-        ostr << "Path: " << requestPath.toString() << "<br>" << endl;
-        ostr << "filename: " << requestPath.getFileName() << "<br>" << endl;
-        ostr << "isFile: " << boolalpha << requestPath.isFile() << "<br>"
+        ostr << "You Requested<br>" << endl;
+        ostr << "Path: " << path.toString() << "<br>" << endl;
+        ostr << "filename: " << path.getFileName() << "<br>" << endl;
+        ostr << "isFile: " << boolalpha << path.isFile() << "<br>"
              << endl;
-        ostr << "isDirectory: " << boolalpha << requestPath.isDirectory()
+        ostr << "isDirectory: " << boolalpha << path.isDirectory()
              << "<br>" << endl;
-        File f(requestPath);
+        File f(path);
         try {
             bool exist = f.exists();
             ostr << "exist: " << boolalpha << exist << "<br>" << endl;
@@ -82,6 +108,7 @@ class FileRequestHandler : public HTTPRequestHandler {
         ostr << "</body>";
         ostr << "</html>";
     }
+
 };
 
 class FileRequestHandlerFactory : public HTTPRequestHandlerFactory {
