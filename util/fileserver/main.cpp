@@ -52,10 +52,10 @@ class FileRequestHandler : public HTTPRequestHandler {
         URI uri("." + request.getURI());
         Path uriPath(uri.getPath());
         map<string, string> params = parseParam(uri.getQueryParameters());
-        if (params.count("dl") && params.at("dl") == "1") {
-            reactFile(uriPath, response);
-        } else {
+        if (params.count("dl") && params.at("dl") == "0") {
             reactInformation(uriPath, response);
+        } else {
+            reactFile(uriPath, response);
         }
     }
 

@@ -42,6 +42,7 @@ set(LIB_PATHS
 set(UTIL_PATHS
     #${CMAKE_CURRENT_SOURCE_DIR}/util/demo_util
     ${CMAKE_CURRENT_SOURCE_DIR}/util/fileserver
+    ${CMAKE_CURRENT_SOURCE_DIR}/util/httpformserver
     )
 
 if(${BUILD_TEST})
